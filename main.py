@@ -8,31 +8,41 @@ k = 2
 bits = [0] * m
 
 def h1(s):
-    # TODO: return sum of bytes mod m
-    return 0
+    return sum(byte for byte in s.encode("utf-8")) % m
 
 def h2(s):
-    # TODO: return sum of (byte * (position+1)) mod m
-    #   for "apple"  ->  97*1 + 112*2 + 112*3 + 108*4 + 101*5  mod 64
-    return 0
+    return sum(byte * (i + 1) for i, byte in enumerate(s.encode("utf-8"))) % m
 
 out = []
 for raw in sys.stdin:
     line = raw.rstrip("\n")
     if not line:
         continue
+
     parts = line.split(" ", 1)
     cmd = parts[0]
     arg = parts[1] if len(parts) > 1 else ""
 
     if cmd == "ADD":
-        # TODO: set bits[h1(arg)] and bits[h2(arg)] to 1, then output "OK"
-        pass
-    elif cmd == "CHECK":
-        # TODO: if BOTH bits are 1, output "MAYBE"; otherwise output "NO"
-        pass
-    elif cmd == "BITS":
-        # TODO: output the bit array as a 64-character string
-        pass
 
-sys.stdout.write("\n".join(out) + "\n")
+        h_1 = h1(arg)
+        h_2 = h2(arg)
+        bits[h_1] = 1
+        bits[h_2] = 1
+        print("OK")
+
+    elif cmd == "CHECK":
+
+        h_1 = h1(arg)
+        h_2 = h2(arg)
+
+        if bits[h_1] == 1 and bits[h_2] == 1:
+            print("MAYBE")
+        else:
+            print("NO")
+
+    elif cmd == "BITS":
+
+        print("".join(str(bit) for bit in bits))
+
+# sys.stdout.write("\n".join(out) + "\n")
