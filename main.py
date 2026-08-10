@@ -1,20 +1,13 @@
 import sys
+
+from bloom_filter import BloomFilter
 from fp_rate_calculator import (calculate_optimal_bits_hashes,
                                 calculate_false_positive_rate,
                                 calculate_bits_per_item)
 from double_hash import (hash_string, h_a, h_b)
 
-m = 64
-k = 2
-bits = [0] * m
-
-def h1(s):
-    return sum(byte for byte in s.encode("utf-8")) % m
-
-def h2(s):
-    return sum(byte * (i + 1) for i, byte in enumerate(s.encode("utf-8"))) % m
-
 out = []
+bf = BloomFilter(0, 0, 1)
 for raw in sys.stdin:
     line = raw.rstrip("\n")
     if not line:
@@ -24,16 +17,24 @@ for raw in sys.stdin:
     cmd = parts[0]
     arg = parts[1:] if len(parts) > 1 else ""
 
-    if cmd == "HASH":
+    if cmd == "INIT":
 
-        print(hash_string(arg[0], int(arg[1]), int(arg[2])))
+        m, k = calculate_optimal_bits_hashes(float(arg[1]), int(arg[0]))
+        bf = BloomFilter(m, k, int(arg[0]))
 
-    elif cmd == "HA":
+        print("OK m={} k={}".format(m, k))
 
-        print(h_a(arg[0]))
+    elif cmd == "ADD":
 
-    elif cmd == "HB":
+        bf.add(arg[0])
+        print("OK")
 
-        print(h_b(arg[0]))
+    elif cmd == "CHECK":
+
+        print("MAYBE" if bf.check(arg[0]) else "NO")
+
+    elif cmd == "STATS":
+
+        print(bf.get_stats())
 
 # sys.stdout.write("\n".join(out) + "\n")
