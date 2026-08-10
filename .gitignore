@@ -1,0 +1,8 @@
+.prog
+*.class
+__pycache__/
+node_modules/
+.idea
+tests
+README.md
+run_tests.sh
