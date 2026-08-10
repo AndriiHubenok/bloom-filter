@@ -2,6 +2,7 @@ import sys
 from fp_rate_calculator import (calculate_optimal_bits_hashes,
                                 calculate_false_positive_rate,
                                 calculate_bits_per_item)
+from double_hash import (hash_string, h_a, h_b)
 
 m = 64
 k = 2
@@ -23,17 +24,16 @@ for raw in sys.stdin:
     cmd = parts[0]
     arg = parts[1:] if len(parts) > 1 else ""
 
-    if cmd == "OPTIMAL":
+    if cmd == "HASH":
 
-        m, k = calculate_optimal_bits_hashes(float(arg[0]), int(arg[1]))
-        print("m={} k={}".format(m, k))
+        print(hash_string(arg[0], int(arg[1]), int(arg[2])))
 
-    elif cmd == "FP":
+    elif cmd == "HA":
 
-        print(calculate_false_positive_rate(int(arg[0]), int(arg[1]), int(arg[2])))
+        print(h_a(arg[0]))
 
-    elif cmd == "BPI":
+    elif cmd == "HB":
 
-        print(calculate_bits_per_item(float(arg[0])))
+        print(h_b(arg[0]))
 
 # sys.stdout.write("\n".join(out) + "\n")
