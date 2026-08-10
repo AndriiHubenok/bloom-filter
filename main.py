@@ -1,7 +1,7 @@
 import sys
-
-# A basic Bloom filter with two hand-computable hashes.
-# Parameters fixed: m = 64 bits, k = 2 hash functions.
+from fp_rate_calculator import (calculate_optimal_bits_hashes,
+                                calculate_false_positive_rate,
+                                calculate_bits_per_item)
 
 m = 64
 k = 2
@@ -19,30 +19,21 @@ for raw in sys.stdin:
     if not line:
         continue
 
-    parts = line.split(" ", 1)
+    parts = line.split(" ")
     cmd = parts[0]
-    arg = parts[1] if len(parts) > 1 else ""
+    arg = parts[1:] if len(parts) > 1 else ""
 
-    if cmd == "ADD":
+    if cmd == "OPTIMAL":
 
-        h_1 = h1(arg)
-        h_2 = h2(arg)
-        bits[h_1] = 1
-        bits[h_2] = 1
-        print("OK")
+        m, k = calculate_optimal_bits_hashes(float(arg[0]), int(arg[1]))
+        print("m={} k={}".format(m, k))
 
-    elif cmd == "CHECK":
+    elif cmd == "FP":
 
-        h_1 = h1(arg)
-        h_2 = h2(arg)
+        print(calculate_false_positive_rate(int(arg[0]), int(arg[1]), int(arg[2])))
 
-        if bits[h_1] == 1 and bits[h_2] == 1:
-            print("MAYBE")
-        else:
-            print("NO")
+    elif cmd == "BPI":
 
-    elif cmd == "BITS":
-
-        print("".join(str(bit) for bit in bits))
+        print(calculate_bits_per_item(float(arg[0])))
 
 # sys.stdout.write("\n".join(out) + "\n")
