@@ -1,5 +1,6 @@
 import sys
 
+from bitwise_bloom_filter_operations import union, intersection
 from bloom_filter import BloomFilter
 from fp_rate_calculator import (calculate_optimal_bits_hashes,
                                 calculate_false_positive_rate,
@@ -7,7 +8,7 @@ from fp_rate_calculator import (calculate_optimal_bits_hashes,
 from double_hash import (hash_string, h_a, h_b)
 
 out = []
-bf = BloomFilter(0, 0, 1)
+bf_dict = {}
 for raw in sys.stdin:
     line = raw.rstrip("\n")
     if not line:
@@ -19,22 +20,37 @@ for raw in sys.stdin:
 
     if cmd == "INIT":
 
-        m, k = calculate_optimal_bits_hashes(float(arg[1]), int(arg[0]))
-        bf = BloomFilter(m, k, int(arg[0]))
+        # m, k = calculate_optimal_bits_hashes(float(arg[2]), int(arg[1]))
+        bf = BloomFilter(int(arg[1]), int(arg[2]))
+        bf_dict[arg[0]] = bf
 
-        print("OK m={} k={}".format(m, k))
+        print("OK")
 
     elif cmd == "ADD":
 
-        bf.add(arg[0])
+        bf_dict[arg[0]].add(arg[1])
         print("OK")
 
     elif cmd == "CHECK":
 
-        print("MAYBE" if bf.check(arg[0]) else "NO")
+        print("MAYBE" if bf_dict[arg[0]].check(arg[1]) else "NO")
 
-    elif cmd == "STATS":
+    elif cmd == "UNION":
 
-        print(bf.get_stats())
+        bf_dict[arg[0]] = union(bf_dict[arg[1]], bf_dict[arg[2]])
+        print("OK")
+
+    elif cmd == "INTERSECT":
+
+        bf_dict[arg[0]] = intersection(bf_dict[arg[1]], bf_dict[arg[2]])
+        print("OK")
+
+    elif cmd == "POPCOUNT":
+
+        print(bf_dict[arg[0]].pop_count())
+
+    elif cmd == "BITS":
+
+        print(bf_dict[arg[0]].get_bits_string())
 
 # sys.stdout.write("\n".join(out) + "\n")

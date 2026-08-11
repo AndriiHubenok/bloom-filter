@@ -2,7 +2,7 @@ from double_hash import hash_string
 
 class BloomFilter:
 
-    def __init__(self, m: int, k: int, expected_n: int):
+    def __init__(self, m: int, k: int, expected_n=1):
         self.m = m
         self.k = k
         self.bits = [0] * m
@@ -10,18 +10,14 @@ class BloomFilter:
         self.expected_n = expected_n
         self.load = 0.0
 
-    def save_bits(self, s):
-        for i in range(self.k):
-            index = sum(byte * (i + 1) for byte in s.encode("utf-8")) % self.m
+    def save_bits(self, positions):
+        for index in positions:
             self.bits[index] = 1
+
         self.n += 1
 
-    def check_bits(self, s):
-        for i in range(self.k):
-            index = sum(byte * (i + 1) for byte in s.encode("utf-8")) % self.m
-            if self.bits[index] != 1:
-                return False
-        return True
+    def check_bits(self, positions):
+        return all(self.bits[index] == 1 for index in positions)
 
     def add(self, inp: str):
         hashed_input = hash_string(inp, self.m, self.k)
@@ -30,6 +26,12 @@ class BloomFilter:
     def check(self, inp):
         hashed_input = hash_string(inp, self.m, self.k)
         return self.check_bits(hashed_input)
+
+    def pop_count(self):
+        return sum(self.bits)
+
+    def get_bits_string(self):
+        return ''.join(str(bit) for bit in self.bits)
 
     def get_stats(self):
         self.load = round(self.n / self.expected_n, 4)
