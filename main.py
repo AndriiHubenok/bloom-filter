@@ -8,6 +8,7 @@ from fp_rate_calculator import (calculate_optimal_bits_hashes,
 from double_hash import (hash_string, h_a, h_b)
 
 out = []
+bf = BloomFilter(0, 0)
 bf_dict = {}
 for raw in sys.stdin:
     line = raw.rstrip("\n")
@@ -21,24 +22,27 @@ for raw in sys.stdin:
     if cmd == "INIT":
 
         # m, k = calculate_optimal_bits_hashes(float(arg[2]), int(arg[1]))
-        bf = BloomFilter(int(arg[1]), int(arg[2]))
+        bf = BloomFilter(int(arg[0]), int(arg[1]))
         bf_dict[arg[0]] = bf
 
         print("OK")
 
     elif cmd == "ADD":
 
-        bf_dict[arg[0]].add(arg[1])
+        bf.add(arg[0])
         print("OK")
 
     elif cmd == "CHECK":
 
-        print("MAYBE" if bf_dict[arg[0]].check(arg[1]) else "NO")
+        print("MAYBE" if bf.check(arg[0]) else "NO")
 
-    elif cmd == "UNION":
+    elif cmd == "REMOVE":
 
-        bf_dict[arg[0]] = union(bf_dict[arg[1]], bf_dict[arg[2]])
-        print("OK")
+        print("OK" if bf.remove(arg[0]) else "WAS_ABSENT")
+
+    elif cmd == "COUNT":
+
+        print(bf.count(arg[0]))
 
     elif cmd == "INTERSECT":
 
