@@ -6,9 +6,10 @@ from fp_rate_calculator import (calculate_optimal_bits_hashes,
                                 calculate_false_positive_rate,
                                 calculate_bits_per_item)
 from double_hash import (hash_string, h_a, h_b)
+from scalable_bloom_filter import ScalableBloomFilter
 
 out = []
-bf = BloomFilter(0, 0)
+sbf = None
 bf_dict = {}
 for raw in sys.stdin:
     line = raw.rstrip("\n")
@@ -21,40 +22,24 @@ for raw in sys.stdin:
 
     if cmd == "INIT":
 
-        # m, k = calculate_optimal_bits_hashes(float(arg[2]), int(arg[1]))
-        bf = BloomFilter(int(arg[0]), int(arg[1]))
-        bf_dict[arg[0]] = bf
-
-        print("OK")
+        sbf = ScalableBloomFilter(int(arg[0]), float(arg[1]))
+        print("OK m={} k={}".format(sbf.filters[-1].m, sbf.filters[-1].k))
 
     elif cmd == "ADD":
 
-        bf.add(arg[0])
+        sbf.add(arg[0])
         print("OK")
 
     elif cmd == "CHECK":
 
-        print("MAYBE" if bf.check(arg[0]) else "NO")
+        print("MAYBE" if sbf.check(arg[0]) else "NO")
 
-    elif cmd == "REMOVE":
+    elif cmd == "FILTERS":
 
-        print("OK" if bf.remove(arg[0]) else "WAS_ABSENT")
+        print(len(sbf.filters))
 
-    elif cmd == "COUNT":
+    elif cmd == "TOTAL":
 
-        print(bf.count(arg[0]))
-
-    elif cmd == "INTERSECT":
-
-        bf_dict[arg[0]] = intersection(bf_dict[arg[1]], bf_dict[arg[2]])
-        print("OK")
-
-    elif cmd == "POPCOUNT":
-
-        print(bf_dict[arg[0]].pop_count())
-
-    elif cmd == "BITS":
-
-        print(bf_dict[arg[0]].get_bits_string())
+        print(sbf.total_n)
 
 # sys.stdout.write("\n".join(out) + "\n")
