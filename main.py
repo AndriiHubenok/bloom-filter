@@ -10,7 +10,7 @@ from scalable_bloom_filter import ScalableBloomFilter
 from cuckoo_filter import CuckooFilter
 
 out = []
-bf = BloomFilter(128, 3)
+bf = None
 sbf = None
 bf_dict = {}
 cf = None
@@ -23,13 +23,34 @@ for raw in sys.stdin:
     cmd = parts[0]
     arg = parts[1:] if len(parts) > 1 else ""
 
-    if cmd == "INVALIDATE":
+    if cmd == "INIT":
+        bf = BloomFilter(int(arg[0]), float(arg[1]))
+        print("OK m={} k={}".format(bf.m, bf.k))
+
+    elif cmd == "ADD":
         bf.add(arg[0])
+        print("OK")
 
-    elif cmd == "CHECK_CACHE":
-        print("INVALIDATED (recheck)" if bf.check(arg[0]) else "CACHED (use)")
+    elif cmd == "PROBE":
+        print("MAYBE" if bf.check(arg[0]) else "OK")
 
-    elif cmd == "STATS":
-        print(bf.get_stats())
+    elif cmd == "LOAD":
+        print('{:.4f}'.format(bf.get_load()))
+
+    elif cmd == "FILL":
+        print('{:.4f}'.format(bf.get_fill()))
+
+    elif cmd == "ACTUAL_FP":
+        print('{:.4f}'.format(bf.get_actual_fp()))
+
+    elif cmd == "THEORETICAL_FP":
+        print('{:.4f}'.format(bf.get_theoretical_fp()))
+
+    elif cmd == "HEALTHY":
+        res = bf.get_healthy_status()
+        if res[0] == "HEALTHY":
+            print(res[0])
+        else:
+            print("DEGRADED " + ", ".join(res))
 
 # sys.stdout.write("\n".join(out) + "\n")

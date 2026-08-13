@@ -1,7 +1,7 @@
 from math import ceil, log, e, exp
 
 
-def calculate_optimal_bits_hashes(target_fp: float, expected_n: int):
+def calculate_optimal_bits_hashes(expected_n: int, target_fp: float):
     m_opt = ceil( -expected_n * log(target_fp, e) / (log(2, e) ** 2))
     k_opt = int(round((m_opt / expected_n) * log(2, e), 0))
     return m_opt, k_opt
