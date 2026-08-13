@@ -7,10 +7,12 @@ from fp_rate_calculator import (calculate_optimal_bits_hashes,
                                 calculate_bits_per_item)
 from double_hash import (hash_string, h_a, h_b)
 from scalable_bloom_filter import ScalableBloomFilter
+from cuckoo_filter import CuckooFilter
 
 out = []
 sbf = None
 bf_dict = {}
+cf = None
 for raw in sys.stdin:
     line = raw.rstrip("\n")
     if not line:
@@ -21,25 +23,36 @@ for raw in sys.stdin:
     arg = parts[1:] if len(parts) > 1 else ""
 
     if cmd == "INIT":
-
-        sbf = ScalableBloomFilter(int(arg[0]), float(arg[1]))
-        print("OK m={} k={}".format(sbf.filters[-1].m, sbf.filters[-1].k))
+        b = int(parts[1])
+        cf = CuckooFilter(b)
+        print(f"OK buckets={b} slots={b * 4}")
 
     elif cmd == "ADD":
-
-        sbf.add(arg[0])
-        print("OK")
+        if cf:
+            print(cf.add(parts[1]))
 
     elif cmd == "CHECK":
+        if cf:
+            print(cf.check(parts[1]))
 
-        print("MAYBE" if sbf.check(arg[0]) else "NO")
+    elif cmd == "REMOVE":
+        if cf:
+            print(cf.remove(parts[1]))
 
-    elif cmd == "FILTERS":
+    elif cmd == "COUNT":
+        if cf:
+            print(cf.get_count())
 
-        print(len(sbf.filters))
+    elif cmd == "LOAD":
+        if cf:
+            print(cf.get_load())
 
-    elif cmd == "TOTAL":
+    elif cmd == "FP":
+        if cf:
+            print(cf.fp(parts[1]))
 
-        print(sbf.total_n)
+    elif cmd == "POSITIONS":
+        if cf:
+            print(cf.positions(parts[1]))
 
 # sys.stdout.write("\n".join(out) + "\n")
