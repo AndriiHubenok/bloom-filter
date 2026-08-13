@@ -10,6 +10,7 @@ from scalable_bloom_filter import ScalableBloomFilter
 from cuckoo_filter import CuckooFilter
 
 out = []
+bf = BloomFilter(128, 3)
 sbf = None
 bf_dict = {}
 cf = None
@@ -22,37 +23,13 @@ for raw in sys.stdin:
     cmd = parts[0]
     arg = parts[1:] if len(parts) > 1 else ""
 
-    if cmd == "INIT":
-        b = int(parts[1])
-        cf = CuckooFilter(b)
-        print(f"OK buckets={b} slots={b * 4}")
+    if cmd == "INVALIDATE":
+        bf.add(arg[0])
 
-    elif cmd == "ADD":
-        if cf:
-            print(cf.add(parts[1]))
+    elif cmd == "CHECK_CACHE":
+        print("INVALIDATED (recheck)" if bf.check(arg[0]) else "CACHED (use)")
 
-    elif cmd == "CHECK":
-        if cf:
-            print(cf.check(parts[1]))
-
-    elif cmd == "REMOVE":
-        if cf:
-            print(cf.remove(parts[1]))
-
-    elif cmd == "COUNT":
-        if cf:
-            print(cf.get_count())
-
-    elif cmd == "LOAD":
-        if cf:
-            print(cf.get_load())
-
-    elif cmd == "FP":
-        if cf:
-            print(cf.fp(parts[1]))
-
-    elif cmd == "POSITIONS":
-        if cf:
-            print(cf.positions(parts[1]))
+    elif cmd == "STATS":
+        print(bf.get_stats())
 
 # sys.stdout.write("\n".join(out) + "\n")

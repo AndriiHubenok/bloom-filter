@@ -8,6 +8,8 @@ class BloomFilter:
         self.bits = [0] * m
         self.n = 0
         self.expected_n = expected_n
+        self.checks = 0
+        self.rechecks = 0
         self.load = 0.0
 
     def save_bits(self, positions):
@@ -17,7 +19,12 @@ class BloomFilter:
         self.n += 1
 
     def check_bits(self, positions):
-        return all(self.bits[index] == 1 for index in positions)
+        self.checks += 1
+        if all(self.bits[index] == 1 for index in positions):
+                    self.rechecks += 1
+                    return True
+
+        return False
 
     def add(self, inp: str):
         hashed_input = hash_string(inp, self.m, self.k)
@@ -34,8 +41,9 @@ class BloomFilter:
         return ''.join(str(bit) for bit in self.bits)
 
     def get_stats(self):
-        self.load = round(self.n / self.expected_n, 4)
-        return "m={} k={} n={} load={:.4f}".format(self.m, self.k, self.n, self.load)
+        return "invalidated={} checks={} rechecks={}".format(self.n, self.checks, self.rechecks)
+        # self.load = round(self.n / self.expected_n, 4)
+        # return "m={} k={} n={} load={:.4f}".format(self.m, self.k, self.n, self.load)
 
     def is_full(self) -> bool:
         return self.n >= self.expected_n
