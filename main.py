@@ -1,5 +1,6 @@
 import sys
 
+from cache import cache
 from bitwise_bloom_filter_operations import union, intersection
 from bloom_filter import BloomFilter
 from fp_rate_calculator import (calculate_optimal_bits_hashes,
@@ -11,9 +12,8 @@ from cuckoo_filter import CuckooFilter
 
 out = []
 bf = None
-sbf = None
-bf_dict = {}
-cf = None
+misses = 0
+bloom_misses = 0
 for raw in sys.stdin:
     line = raw.rstrip("\n")
     if not line:
@@ -27,18 +27,29 @@ for raw in sys.stdin:
         bf = BloomFilter(int(arg[0]), float(arg[1]))
         print("OK m={} k={}".format(bf.m, bf.k))
 
-    elif cmd == "ADD":
+    elif cmd == "PUT_CACHE":
         bf.add(arg[0])
+        cache[arg[0]] = arg[1]
         print("OK")
 
-    elif cmd == "PROBE":
-        print("MAYBE" if bf.check(arg[0]) else "OK")
+    elif cmd == "GET":
+        if bf.check(arg[0]):
+            if arg[0] in cache:
+                print("HIT " + cache[arg[0]])
+            else:
+                print("MISS_BLOOM_FP")
+                misses += 1
+        else:
+            print("BLOOM_MISS")
+            bloom_misses += 1
 
-    elif cmd == "LOAD":
-        print('{:.4f}'.format(bf.get_load()))
+    elif cmd == "INVALIDATE":
+        del cache[arg[0]]
+        print("OK")
 
-    elif cmd == "FILL":
-        print('{:.4f}'.format(bf.get_fill()))
+    elif cmd == "STATS":
+        print("hits={} misses={} bloom_misses={} bloom_fp={}"
+              .format(bf.n, misses, bloom_misses, misses))
 
     elif cmd == "ACTUAL_FP":
         print('{:.4f}'.format(bf.get_actual_fp()))
