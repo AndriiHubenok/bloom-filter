@@ -25,6 +25,9 @@ for raw in sys.stdin:
     arg = parts[1:] if len(parts) > 1 else ""
 
     if cmd == "INIT":
+        hited = 0
+        misses = 0
+        bloom_misses = 0
         bf = BloomFilter(int(arg[0]), float(arg[1]))
         print("OK m={} k={}".format(bf.m, bf.k))
 
