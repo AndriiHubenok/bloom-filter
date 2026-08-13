@@ -12,6 +12,7 @@ from cuckoo_filter import CuckooFilter
 
 out = []
 bf = None
+hited = 0
 misses = 0
 bloom_misses = 0
 for raw in sys.stdin:
@@ -35,6 +36,7 @@ for raw in sys.stdin:
     elif cmd == "GET":
         if bf.check(arg[0]):
             if arg[0] in cache:
+                hited += 1
                 print("HIT " + cache[arg[0]])
             else:
                 print("MISS_BLOOM_FP")
@@ -49,7 +51,7 @@ for raw in sys.stdin:
 
     elif cmd == "STATS":
         print("hits={} misses={} bloom_misses={} bloom_fp={}"
-              .format(bf.n, misses, bloom_misses, misses))
+              .format(hited, misses, bloom_misses, misses))
 
     elif cmd == "ACTUAL_FP":
         print('{:.4f}'.format(bf.get_actual_fp()))
